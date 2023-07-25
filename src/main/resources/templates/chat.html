@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.or">
+<html lang="en" xmlns:th="http://www.thymeleaf.or" xmlns:sec="http://www.w3.org/1999/xhtml">
 
 <th:block th:fragment="content">
 
@@ -21,51 +21,91 @@
       </div>
     </div>
   </div>
+  <div class="board_login" sec:authorize="isAnonymous()">
+    <a class="login" th:href="@{/user/login}">
+      <div>
+        <p>로그인</p>
+      </div>
+    </a>
+    /
+    <a th:href="@{/user/Initiation_General}" class="signup">
+      <div>
+        <p>회원가입</p>
+      </div>
+    </a>
+  </div>
+  <div class="board_login" sec:authorize="isAuthenticated()">
+    <!--        sec:authorize="isAuthenticated()" 로그인 성공시 나오게 하는 코드       -->
+    <a class="login" id ="logout" th:href="@{/user/logout}">
+      <div>
+        <p>로그아웃</p>
+      </div>
+    </a>
+  </div>
+  </div>
+
 
 </th:block>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script th:inline="javascript">
+  const username = /*[[${#authentication.principal}]]*/
+  console.log(username=="anonymousUser")
+  console.log("로그인정보 : "+[[${#authentication.isAuthenticated()}]])
+</script>
+<script th:inline="javascript">
             $(document).ready(function(){
             const currentHost = window.location.host;
-            const username = [[${#authentication.principal.username}]];
+            const user = /*[[${#authentication.principal}]]*/
 
             $("#disconn").on("click", (e) => {
                 disconnect();
             })
 
             $("#button-send").on("click", (e) => {
-                send();
+              if(!user=="anonymousUser"){
+                  send();
+              }else window.location.href = "/user/login";
+
             });
             $("#msg").on("keypress", function(e) {
               if (e.key === "Enter") {
                 send();
               }
             });
+          $("#logout").on("click", (e) => {
+             websocket.onclose = onClose;
+             console.log("로그아웃")
+            });
+
             const websocket = new WebSocket(`wss://${currentHost}/ws/chat`);
 
             websocket.onmessage = onMessage;
             websocket.onopen = onOpen;
-            websocket.onclose = onClose;
+
 
             function send(){
 
                 let msg = document.getElementById("msg");
 
-                console.log(username + ":" + msg.value);
-                websocket.send(username + ":" + msg.value);
+                console.log(user.username + ":" + msg.value);
+                websocket.send(user.username + ":" + msg.value);
                 msg.value = '';
             }
 
             //채팅창에서 나갔을 때
             function onClose(evt) {
-                var str = username + ": 님이 방을 나가셨습니다.";
-                websocket.send(str);
+                if(!user=="anonymousUser"){
+                  var str=user.username + ": 님이 방을 나가셨습니다.";
+                  websocket.send(str);
+                }
             }
 
             //채팅창에 들어왔을 때
             function onOpen(evt) {
-                var str = username + ": 님이 입장하셨습니다.";
+              if(!user=="anonymousUser"){
+                var str = user.username + ": 님이 방을 들어왔습니다.";
                 websocket.send(str);
+              }
             }
 
             function onMessage(msg) {
@@ -79,7 +119,7 @@
                     console.log('arr[' + i + ']: ' + arr[i]);
                 }
 
-                var cur_session = username;
+                var cur_session = user.username;
 
                 //현재 세션에 로그인 한 사람
                 console.log("cur_session : " + cur_session);

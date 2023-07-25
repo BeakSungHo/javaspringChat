@@ -20,6 +20,7 @@ public class ChatHandler extends TextWebSocketHandler {
     protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
         String payload = message.getPayload();
         log.info("payload : " + payload);
+        System.out.println("payload : " + payload);
 
         for(WebSocketSession sess: list) {
             sess.sendMessage(message);
@@ -33,6 +34,7 @@ public class ChatHandler extends TextWebSocketHandler {
         list.add(session);
 
         log.info(session + " 클라이언트 접속");
+        System.out.println("session : " + session);
     }
 
     /* Client가 접속 해제 시 호출되는 메서드드 */

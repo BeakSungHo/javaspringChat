@@ -46,7 +46,10 @@ public class SecurityConfig {
 //and
                 .headers(headers->headers
                         .addHeaderWriter(new XFrameOptionsHeaderWriter(
-                                XFrameOptionsHeaderWriter.XFrameOptionsMode.SAMEORIGIN)))
+                                XFrameOptionsHeaderWriter.XFrameOptionsMode.SAMEORIGIN))
+                        .frameOptions(frameOptionsConfig -> frameOptionsConfig.sameOrigin()))
+//                frameOptions은 챗때문에 일시적 추가
+
 //and
                 .formLogin((formLogin)->formLogin
                         .loginPage("/user/login")
